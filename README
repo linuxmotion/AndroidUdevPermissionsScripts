@@ -1,0 +1,18 @@
+
+This script is for creating the nessecery usb rules for ubuntu 10.10
+to allow most Android powerered devices to connect
+
+To run the script fallow the fallowing directions
+
+1) Allow files to execute, run commands in the terminal
+$ chmod u+rx rules.sh
+$ chmod create_android_rules.sh
+
+2) Execute files, run commands in the terminal
+$ . create_android_rules.sh
+
+3) You will be promted for your password
+
+4) Congratulations you have all the Google presribed manufatures device permisions
+
+
