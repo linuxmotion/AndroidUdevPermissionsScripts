@@ -49,6 +49,7 @@ sudo service udev restart
 else
 
 echo "Your files was not created, please run again with sudo"
+exit -1
 
 fi
 
