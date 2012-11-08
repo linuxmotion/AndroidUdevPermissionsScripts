@@ -1,0 +1,166 @@
+#!/bin/bash
+
+USBVendorIDs=(0502 0b05 413c  0489  04c5  04c5  091e  18d1  109b  0bb4  12d1  24e3  2116  0482  17ef  1004  22b8  
+	0409  2080  0955  2257  10a9  1d4d  0471  04da  05c6  1f53  04e8  04dd  054c  0fce  2340  0930  19d2)
+
+Vendors=(Acer  ASUS  Dell  Foxconn  Fujitsu Fujitsu-Toshiba  Garmin-Asus  Google  Hisense HTC Huawei  K-Touch  KT-Tech  Kyocera  Lenovo LG  Motorola NEC  Nook  Nvidia  OTGV  Pantech  Pegatron  Philips  PMC-Sierra  Qualcomm SK-Telesys Samsung  Sharp Sony Sony-Ericsson  Teleepoch  Toshiba  ZTE)
+
+
+DIR=/etc/udev/rules.d
+FILE=51-android.rules
+CONONICAL=$DIR/$FILE
+ADB=''
+
+welcomeMessage(){
+
+
+
+echo "##########################################################"
+echo "#                                                        #"
+echo "# Add device permisions to the udev rules by LinuxMotion #"
+echo "#                                                        #"
+echo "# Updated: November 7 2012                               #"
+echo "#                                                        #"
+echo "#                                                        #"
+echo "##########################################################"
+}
+
+
+   
+exists()
+{
+        if command -v $1 &>/dev/null
+        then
+               # echo " Yes, command :$1: was found."
+                return 0
+        else
+                # echo " No, command :$1: was NOT found."
+                return 1
+        fi
+}
+
+killadbserver(){
+
+
+	echo "# Adb found, killing the adb server                        #"
+	echo "#                                                          #"
+	$ADB kill-server
+	echo "#                                                          #"
+	echo "# Please unplug and replug any currently connected devices #"
+	echo "# Press enter to continue                                  #"
+	read pause
+	echo "#                                                          #"
+	$ADB devices
+	echo "#                                                          #"
+	echo "############################################################"
+
+	$ADB devices
+
+
+}
+
+createRules(){
+
+echo "#                                                        #"
+echo "#                                                        #"
+echo "# Creating the 51-android.rules file in the              #"
+echo "# $DIR directory                            #"
+echo "#                                                        #"
+echo "#       This file containes the permisions for udev      #"
+echo "#                                                        #"
+echo "#                                                        #"
+
+
+touch $CONONICAL
+welcomeMessage > $CONONICAL
+counter=0
+for i in "${USBVendorIDs[@]}"
+do
+CREATE=`echo "SUBSYSTEM==\"usb\", SYSFS{idVendor}==\"$i\", MODE=\"0666\"  #${Vendors[counter]}" >> $CONONICAL`
+counter=$[$counter+1]
+$CREATE 2> /dev/null
+done
+
+sudo chmod +x $CONONICAL
+
+}
+
+
+
+rootTest(){
+if [ "$(whoami)" != "root" ]; then
+	echo "Sorry, you are not root."
+	echo "Please run again with sudo."
+	exit 1
+fi
+
+echo "#   Root privleges found                                 #"
+echo "#                                                        #"
+
+}
+
+restartServices(){
+
+if [ -f $CONONICAL  ]
+then
+echo "#                                                        #"
+echo "# The file was created succesfully                       #"
+echo "# Restarting udev to read the new rules                  #"
+echo "#                                                        #"
+echo "#                                                        #"
+sudo service udev restart >> /dev/null
+else
+echo "#                                                        #"
+echo "#                                                        #"
+echo "# Your files was not created, please run again           #"
+echo "#                                                        #"
+echo "#                                                        #"
+echo "##########################################################"
+exit -1
+
+fi
+
+adbexists=`command -v adb`
+
+	if [ -n "$adbexists"  ] 
+	then
+	ADB=`$adbexists`
+	killadbserver
+	
+	else	
+	echo "#                                                        #"
+	echo "#                                                        #"
+	echo "# ADB is not in your path or the shell could not find    #"
+	echo "# it but the script was created. If adb is in your       #"
+	echo "# PATH you will need to manually restart adb using       #"
+	echo "# adb kill-server                                        #"
+	echo "#                                                        #"
+	echo "##########################################################"
+	fi
+
+}  
+
+
+main(){
+
+
+welcomeMessage 
+echo "# Press any key to continue                              #"
+read
+echo "#                                                        #"
+echo "#                                                        #"
+echo "# Requesting for Root privleges                          #"
+echo "#                                                        #"
+echo "#                                                        #"
+rootTest
+
+createRules
+
+restartServices
+
+
+}
+
+
+main
+
